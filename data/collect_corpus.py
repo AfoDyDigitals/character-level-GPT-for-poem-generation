@@ -1,28 +1,8 @@
-"""
-collect_corpus.py
-=================
-Downloads and cleans a poetry corpus from Project Gutenberg.
-Run this in Google Colab or locally.
-
-Usage:
-    python collect_corpus.py
-
-Output:
-    poetry_corpus.txt  — the full corpus (train + val combined, raw)
-    train.txt          — 90% of the corpus
-    val.txt            — 10% of the corpus
-"""
-
 import requests
 import re
 import random
 import os
 
-# ─────────────────────────────────────────────
-# 1. POETS TO DOWNLOAD
-#    Each entry is (Poet name, Gutenberg text URL)
-#    We use the plain-text UTF-8 URLs directly.
-# ─────────────────────────────────────────────
 POETS = [
     ("Walt Whitman",          "https://www.gutenberg.org/cache/epub/1322/pg1322.txt"),   # Leaves of Grass
     ("Emily Dickinson",       "https://www.gutenberg.org/cache/epub/12242/pg12242.txt"), # Complete Poems
@@ -39,7 +19,7 @@ POETS = [
 
 
 # ─────────────────────────────────────────────
-# 2. HELPERS
+# HELPERS
 # ─────────────────────────────────────────────
 
 def download_text(url: str) -> str | None:
@@ -145,7 +125,7 @@ def split_corpus(text: str, val_fraction: float = 0.1, seed: int = 42):
 
 
 # ─────────────────────────────────────────────
-# 3. MAIN
+# MAIN
 # ─────────────────────────────────────────────
 
 def main():
