@@ -1,21 +1,3 @@
- """
-train.py
-========
-Training loop for the character-level GPT model.
-
-Features:
-    - Character-level tokenisation (builds vocab from corpus)
-    - Train / val split loading
-    - AdamW optimiser with linear learning rate warm-up
-    - Loss + bits-per-character logging
-    - Periodic poetry sample generation
-    - Checkpoint saving
-    - Flash vs Classic attention speed/memory comparison
-
-Usage (in Colab):
-    !python training/train.py
-"""
-
 import os
 import sys
 import time
@@ -38,9 +20,7 @@ TRAIN_FILE   = "data/train.txt"
 VAL_FILE     = "data/val.txt"
 CHECKPOINT_DIR = "checkpoints"
 
-# ── Training hyperparameters ─────────────────────────────────
-# These match the lab's suggested starting point.
-# Change these for Stage III (hyperparameter exploration).
+# ── Training hyperparameters ─────────────────────────────────.
 CONTEXT_LENGTH = 256
 N_LAYERS       = 6
 N_HEADS        = 8
@@ -126,14 +106,7 @@ def get_batch(data: torch.Tensor, batch_size: int, context_length: int, device: 
 
 @torch.no_grad()
 def evaluate(model, val_data, batch_size, context_length, eval_steps, device):
-    """
-    Estimate validation loss by averaging over eval_steps random batches.
-    Returns average loss and bits-per-character (BPC).
-
-    Bits-per-character = loss / log(2)
-    Measures how many bits the model needs on average to predict each character.
-    A perfect model → 0 BPC. A random model → log2(vocab_size) BPC.
-    """
+    
     model.eval()
     losses = []
     for _ in range(eval_steps):
@@ -158,7 +131,6 @@ def generate_sample(model, prompt: str, char2idx: dict, idx2char: dict,
     """Generate a poetry sample from the model given a string prompt."""
     model.eval()
 
-    # Encode the prompt; fall back to newline if chars are unknown
     prompt_clean = "".join(c for c in prompt if c in char2idx)
     if not prompt_clean:
         prompt_clean = "\n"
@@ -176,15 +148,7 @@ def generate_sample(model, prompt: str, char2idx: dict, idx2char: dict,
 # ══════════════════════════════════════════════════════════════
 
 def get_lr(step: int, warmup_steps: int, base_lr: float) -> float:
-    """
-    Linear warm-up learning rate schedule.
-    - Steps 0..warmup_steps: LR rises linearly from 0 to base_lr
-    - After warmup: LR stays constant at base_lr
-
-    Why warm-up? In the first steps, weights are random and gradients
-    are noisy. A small LR prevents the model from making huge, unstable
-    updates early on.
-    """
+   
     if step < warmup_steps:
         return base_lr * (step + 1) / warmup_steps
     return base_lr
@@ -196,11 +160,7 @@ def get_lr(step: int, warmup_steps: int, base_lr: float) -> float:
 
 def compare_attention_implementations(model, train_data, batch_size,
                                       context_length, device, n_steps=20):
-    """
-    Compare Flash Attention vs Classic masked attention.
-    Measures wall-clock time and peak GPU memory for both implementations.
-    Prints a summary table for your report.
-    """
+    
     print("\n" + "═" * 50)
     print("  Attention Implementation Comparison")
     print("═" * 50)
@@ -288,13 +248,12 @@ def train():
     model = CharacterGPT(config).to(DEVICE)
     print(f"  {model}")
 
-    # ── Attention comparison (do this once before training) ──
+
     compare_attention_implementations(
         model, train_data, BATCH_SIZE, CONTEXT_LENGTH, DEVICE
     )
 
     # ── Optimiser ────────────────────────────────────────────
-    # AdamW with weight decay only on weight matrices (not biases or LayerNorms)
     decay_params    = [p for n, p in model.named_parameters()
                        if p.dim() >= 2 and p.requires_grad]
     no_decay_params = [p for n, p in model.named_parameters()
@@ -399,16 +358,11 @@ def train():
 
 
 # ══════════════════════════════════════════════════════════════
-# 8. PLOTTING (run after training)
+# 8. PLOTTING
 # ══════════════════════════════════════════════════════════════
 
 def plot_training_curves(history_path: str = "checkpoints/history.json"):
-    """
-    Load saved training history and plot loss + BPC curves.
-    Run this in a Colab cell after training:
-        from training.train import plot_training_curves
-        plot_training_curves()
-    """
+   
     import matplotlib.pyplot as plt
 
     with open(history_path) as f:
