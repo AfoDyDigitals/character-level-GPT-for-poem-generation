@@ -1,0 +1,11 @@
+
+# Large data files
+*.txt
+*.bin
+*.pt
+checkpoints/
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
