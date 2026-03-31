@@ -1,15 +1,25 @@
+<<<<<<< Updated upstream
 import os, sys, argparse, json
+=======
+import os, sys, argparse, json, time
+>>>>>>> Stashed changes
 import torch
 import torch.nn as nn
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from model.model import CharacterGPT, GPTConfig
 from training.train import (load_corpus, build_vocab, encode, get_batch,
                              evaluate, generate_sample, get_lr,
+<<<<<<< Updated upstream
                              compare_attention_implementations,
                              TRAIN_FILE, VAL_FILE,
                              BATCH_SIZE, LEARNING_RATE, WARMUP_STEPS,
                              LOG_INTERVAL, EVAL_INTERVAL, EVAL_STEPS,
                              SAMPLE_INTERVAL, CHECKPOINT_INTERVAL,
+=======
+                             TRAIN_FILE, VAL_FILE, BATCH_SIZE, LEARNING_RATE,
+                             WARMUP_STEPS, LOG_INTERVAL, EVAL_INTERVAL,
+                             EVAL_STEPS, SAMPLE_INTERVAL, CHECKPOINT_INTERVAL,
+>>>>>>> Stashed changes
                              SAMPLE_LENGTH, SAMPLE_PROMPT, TEMPERATURE, TOP_K)
 
 EXPERIMENTS = {
@@ -18,6 +28,7 @@ EXPERIMENTS = {
         "n_layers":       9,
         "context_length": 256,
         "total_steps":    20000,
+<<<<<<< Updated upstream
         "checkpoint_dir": "/content/drive/MyDrive/lab3_checkpoints/layers9",
     },
     "steps50k": {
@@ -26,6 +37,23 @@ EXPERIMENTS = {
         "context_length": 256,
         "total_steps":    50000,
         "checkpoint_dir": "/content/drive/MyDrive/lab3_checkpoints/steps50k",
+=======
+        "checkpoint_dir": "/kaggle/working/checkpoints/baseline",
+    },
+    "layers9": {
+        "label":          "More layers (9L, 256ctx, 10k steps)",
+        "n_layers":       9,
+        "context_length": 256,
+        "total_steps":    10000,
+        "checkpoint_dir": "/kaggle/working/checkpoints/layers9",
+    },
+    "steps30k": {
+        "label":          "More steps (6L, 256ctx, 30k steps)",
+        "n_layers":       6,
+        "context_length": 256,
+        "total_steps":    30000,
+        "checkpoint_dir": "/kaggle/working/checkpoints/steps30k",
+>>>>>>> Stashed changes
     },
 }
 
@@ -37,7 +65,10 @@ def run_experiment(exp_name):
     CHECKPOINT_DIR = cfg["checkpoint_dir"]
     os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 
+<<<<<<< Updated upstream
     # Load data
+=======
+>>>>>>> Stashed changes
     train_text = load_corpus(TRAIN_FILE)
     val_text   = load_corpus(VAL_FILE)
     vocab, char2idx, idx2char = build_vocab(train_text)
@@ -46,6 +77,7 @@ def run_experiment(exp_name):
                    "idx2char": {str(k): v for k, v in idx2char.items()}}, f)
     train_data = encode(train_text, char2idx)
     val_data   = encode(val_text,   char2idx)
+<<<<<<< Updated upstream
 
     # Build model with experiment-specific config
     config = GPTConfig(
@@ -79,6 +111,38 @@ def run_experiment(exp_name):
         for group in optimizer.param_groups:
             group["lr"] = lr
 
+=======
+
+    config = GPTConfig(
+        vocab_size     = len(vocab),
+        context_length = cfg["context_length"],
+        n_layers       = cfg["n_layers"],
+        n_heads        = 8,
+        d_model        = 256,
+        dropout        = 0.1,
+    )
+    model = CharacterGPT(config).to(DEVICE)
+    print(f"  {model}")
+
+    decay_params    = [p for n, p in model.named_parameters()
+                       if p.dim() >= 2 and p.requires_grad]
+    no_decay_params = [p for n, p in model.named_parameters()
+                       if p.dim() < 2 and p.requires_grad]
+    optimizer = torch.optim.AdamW([
+        {"params": decay_params,    "weight_decay": 0.1},
+        {"params": no_decay_params, "weight_decay": 0.0},
+    ], lr=LEARNING_RATE)
+
+    history = {"step": [], "train_loss": [], "val_loss": [], "val_bpc": []}
+    model.train()
+    t_start = time.time()
+
+    for step in range(1, cfg["total_steps"] + 1):
+        lr = get_lr(step, WARMUP_STEPS, LEARNING_RATE)
+        for group in optimizer.param_groups:
+            group["lr"] = lr
+
+>>>>>>> Stashed changes
         x, y = get_batch(train_data, BATCH_SIZE, cfg["context_length"], DEVICE)
         logits, loss = model(x, y)
         optimizer.zero_grad()
@@ -97,19 +161,29 @@ def run_experiment(exp_name):
         if step % EVAL_INTERVAL == 0:
             val_loss, val_bpc = evaluate(model, val_data, BATCH_SIZE,
                                          cfg["context_length"], EVAL_STEPS, DEVICE)
+<<<<<<< Updated upstream
             print(f"\n  ── Val @ step {step} ──")
             print(f"     val loss : {val_loss:.4f}")
             print(f"     val BPC  : {val_bpc:.4f}\n")
+=======
+            print(f"\n  ── Val @ step {step} ── val loss: {val_loss:.4f} | BPC: {val_bpc:.4f}\n")
+>>>>>>> Stashed changes
             history["val_loss"].append(val_loss)
             history["val_bpc"].append(val_bpc)
             with open(os.path.join(CHECKPOINT_DIR, "history.json"), "w") as f:
                 json.dump(history, f)
 
         if step % SAMPLE_INTERVAL == 0:
+<<<<<<< Updated upstream
             print(f"\n  ── Sample @ step {step} ──")
             sample = generate_sample(model, SAMPLE_PROMPT, char2idx, idx2char,
                                      SAMPLE_LENGTH, TEMPERATURE, TOP_K, DEVICE)
             print(sample)
+=======
+            sample = generate_sample(model, SAMPLE_PROMPT, char2idx, idx2char,
+                                     SAMPLE_LENGTH, TEMPERATURE, TOP_K, DEVICE)
+            print(f"\n  ── Sample @ step {step} ──\n{sample}\n")
+>>>>>>> Stashed changes
 
         if step % CHECKPOINT_INTERVAL == 0:
             torch.save({
@@ -118,7 +192,11 @@ def run_experiment(exp_name):
                 "optim_state": optimizer.state_dict(),
                 "history": history,
             }, os.path.join(CHECKPOINT_DIR, f"ckpt_step{step}.pt"))
+<<<<<<< Updated upstream
             print(f"  ✓ Checkpoint saved to Drive\n")
+=======
+            print(f"  ✓ Checkpoint saved\n")
+>>>>>>> Stashed changes
 
     torch.save({
         "step": cfg["total_steps"], "config": config.__dict__,
@@ -126,9 +204,13 @@ def run_experiment(exp_name):
         "optim_state": optimizer.state_dict(),
         "history": history,
     }, os.path.join(CHECKPOINT_DIR, "ckpt_final.pt"))
+<<<<<<< Updated upstream
 
     total_time = time.time() - t_start
     print(f"\n✓ Done in {total_time/60:.1f} min")
+=======
+    print(f"\n✓ Done in {(time.time()-t_start)/60:.1f} min")
+>>>>>>> Stashed changes
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
