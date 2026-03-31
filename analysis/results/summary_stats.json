@@ -1,0 +1,23 @@
+{
+  "structural": {
+    "corpus_mean_line_len": 43.85074290859973,
+    "generated_mean_line_len": 41.345991561181435,
+    "corpus_mean_stanza_size": 5.731612903225806,
+    "generated_mean_stanza_size": 4.647058823529412
+  },
+  "rhyme": {
+    "corpus": 0.06036077705827937,
+    "by_temperature": {
+      "0.6": 0.01607142857142857,
+      "0.8": 0.03371212121212121,
+      "1.0": 0.004166666666666667,
+      "1.2": 0.0
+    }
+  },
+  "vocabulary": {
+    "unique_words_generated": 2142,
+    "unique_words_in_corpus": 7090,
+    "overlap_count": 1367,
+    "overlap_fraction": 0.638188608776844
+  }
+}
